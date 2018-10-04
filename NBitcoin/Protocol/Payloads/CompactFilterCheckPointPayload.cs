@@ -66,11 +66,26 @@ namespace NBitcoin.Protocol
 			stream.ReadWrite(ref _filterType);
 			stream.ReadWrite(ref _stopHash);
 			stream.ReadWrite(ref _FilterHeadersLength);
-			var _tempfilterHeaders = new byte[_FilterHeadersLength.ToLong() * 32];
+			//When reading we can do this
+			//But when serializing(Writing) we have to fill the temp filterHeaders
 
-			stream.ReadWrite(ref _tempfilterHeaders);
+			if (stream.Serializing)
+			{
+				//turn the uint256[] into a byte array to write back into the bitcoin stream
+				var _tempfilterHeaders = //Write method to convert uint256[] -> byte[]
+			}
+			else
+			{
+				//instantiate a byte[] to hold the incoming hashes
+				var _tempfilterHeaders = new byte[_FilterHeadersLength.ToLong() * 32];
 
-			_filterHeaders = GetHashes(_tempfilterHeaders);
+				//Write filters to temp variable
+				stream.ReadWrite(ref _tempfilterHeaders);
+
+				//Convert the byte[] into "readable" uint256 hashes
+				_filterHeaders = GetHashes(_tempfilterHeaders);
+			}
+
 		}
 
 
